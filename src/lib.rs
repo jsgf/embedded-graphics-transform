@@ -11,12 +11,16 @@
 //! - transposition
 //!
 //! Note that these transformations can be composed if needed.
-//! 
+//!
 //! Because this is a completely generic implementation, it cannot take
 //! advantage of any hardware or driver specific specializations. In particular,
 //! [`DrawTarget::fill_contiguous`] must fall back to a generic implementation
-//! using [`draw_iter`](DrawTarget::draw_iter). ([`fill_solid`](DrawTarget::fill_solid) and
-//! [`clear`](DrawTarget::clear) can use specialized implementations, however.)
+//! using [`draw_iter`](DrawTarget::draw_iter).
+//! ([`fill_solid`](DrawTarget::fill_solid) and [`clear`](DrawTarget::clear) can
+//! use specialized implementations, however.)
+//!
+//! All the transforms implement [`AsRef<D>`]/[`AsMut<D>`] to get access to the
+//! underlying display object so that its inherent functions can be called.
 #![no_std]
 
 use embedded_graphics_core::{prelude::*, primitives::Rectangle};
@@ -37,6 +41,14 @@ macro_rules! xform_new {
     };
 }
 
+macro_rules! impl_as_ref {
+    ($_asref:ident, $expr:expr, ) => { $expr };
+
+    ($asref:ident, $expr:expr, $xform:ident $($rest:ident)*) => {
+        impl_as_ref!($asref, r#impl::$xform::$asref($expr), $($rest)*)
+    };
+}
+
 macro_rules! impl_xform {
     ($(#[$attr:meta])* $name:ident : $($xforms:ident)*) => {
         $(#[$attr])*
@@ -50,6 +62,25 @@ macro_rules! impl_xform {
                 $name {
                     target: xform_new!(target, $($xforms)*)
                 }
+            }
+
+            /// Recover the inner display instance.
+            pub fn into_inner(self) -> D {
+                impl_as_ref!(into_inner, self.target, $($xforms)*)
+            }
+        }
+
+        impl<D> AsRef<D> for $name<D> {
+            #[inline]
+            fn as_ref(&self) -> &D {
+                impl_as_ref!(as_ref, &self.target, $($xforms)*)
+            }
+        }
+
+        impl<D> AsMut<D> for $name<D> {
+            #[inline]
+            fn as_mut(&mut self) -> &mut D {
+                impl_as_ref!(as_mut, &mut self.target, $($xforms)*)
             }
         }
 
@@ -194,6 +225,23 @@ impl<D> Rotate<D> {
         };
         Rotate { target }
     }
+
+    /// Recover the inner display instance.
+    pub fn into_inner(self) -> D {
+        rotate_impl!(self, into_inner())
+    }
+}
+
+impl<D> AsRef<D> for Rotate<D> {
+    fn as_ref(&self) -> &D {
+        rotate_impl!(&self, as_ref())
+    }
+}
+
+impl<D> AsMut<D> for Rotate<D> {
+    fn as_mut(&mut self) -> &mut D {
+        rotate_impl!(&mut self, as_mut())
+    }
 }
 
 impl<D: Dimensions> Dimensions for Rotate<D> {
@@ -274,6 +322,22 @@ mod r#impl {
         pub(crate) fn new(target: D) -> Self {
             TransposeXY { target }
         }
+
+        pub(crate) fn into_inner(self) -> D {
+            self.target
+        }
+    }
+
+    impl<D> AsRef<D> for TransposeXY<D> {
+        fn as_ref(&self) -> &D {
+            &self.target
+        }
+    }
+
+    impl<D> AsMut<D> for TransposeXY<D> {
+        fn as_mut(&mut self) -> &mut D {
+            &mut self.target
+        }
     }
 
     impl<D: Dimensions> Dimensions for TransposeXY<D> {
@@ -315,6 +379,22 @@ mod r#impl {
     impl<D> MirrorX<D> {
         pub(crate) fn new(target: D) -> Self {
             MirrorX { target }
+        }
+
+        pub(crate) fn into_inner(self) -> D {
+            self.target
+        }
+    }
+
+    impl<D> AsRef<D> for MirrorX<D> {
+        fn as_ref(&self) -> &D {
+            &self.target
+        }
+    }
+
+    impl<D> AsMut<D> for MirrorX<D> {
+        fn as_mut(&mut self) -> &mut D {
+            &mut self.target
         }
     }
 
@@ -360,6 +440,22 @@ mod r#impl {
     impl<D> MirrorY<D> {
         pub(crate) fn new(target: D) -> Self {
             MirrorY { target }
+        }
+
+        pub(crate) fn into_inner(self) -> D {
+            self.target
+        }
+    }
+
+    impl<D> AsRef<D> for MirrorY<D> {
+        fn as_ref(&self) -> &D {
+            &self.target
+        }
+    }
+
+    impl<D> AsMut<D> for MirrorY<D> {
+        fn as_mut(&mut self) -> &mut D {
+            &mut self.target
         }
     }
 
