@@ -1,0 +1,11 @@
+[package]
+name = "embedded-graphics-transform"
+version = "0.1.0"
+edition = "2021"
+authors = [
+    "Jeremy Fitzhardinge <jeremy@goop.org>",
+]
+keywords = ["embedded", "graphics", "no-std"]
+
+[dependencies]
+embedded-graphics-core = "0.3.3"
