@@ -157,6 +157,33 @@ pub struct Rotate<D> {
     target: RotateInner<D>,
 }
 
+macro_rules! rotate_impl {
+    (& $rot:expr, $func:ident ( $($args:expr),* $(,)?)) => {
+        match &$rot.target {
+            RotateInner::Rotate0(inner) => inner.$func($($args),*),
+            RotateInner::Rotate90(inner) => inner.$func($($args),*),
+            RotateInner::Rotate180(inner) => inner.$func($($args),*),
+            RotateInner::Rotate270(inner) => inner.$func($($args),*),
+        }
+    };
+    (&mut $rot:expr, $func:ident ( $($args:expr),* $(,)?)) => {
+        match &mut $rot.target {
+            RotateInner::Rotate0(inner) => inner.$func($($args),*),
+            RotateInner::Rotate90(inner) => inner.$func($($args),*),
+            RotateInner::Rotate180(inner) => inner.$func($($args),*),
+            RotateInner::Rotate270(inner) => inner.$func($($args),*),
+        }
+    };
+    ($rot:expr, $func:ident ( $($args:expr),* $(,)?)) => {
+        match $rot.target {
+            RotateInner::Rotate0(inner) => inner.$func($($args),*),
+            RotateInner::Rotate90(inner) => inner.$func($($args),*),
+            RotateInner::Rotate180(inner) => inner.$func($($args),*),
+            RotateInner::Rotate270(inner) => inner.$func($($args),*),
+        }
+    };
+}
+
 impl<D> Rotate<D> {
     pub fn new(rot: Rotation, target: D) -> Self {
         let target = match rot {
@@ -171,12 +198,7 @@ impl<D> Rotate<D> {
 
 impl<D: Dimensions> Dimensions for Rotate<D> {
     fn bounding_box(&self) -> Rectangle {
-        match &self.target {
-            RotateInner::Rotate0(inner) => inner.bounding_box(),
-            RotateInner::Rotate90(inner) => inner.bounding_box(),
-            RotateInner::Rotate180(inner) => inner.bounding_box(),
-            RotateInner::Rotate270(inner) => inner.bounding_box(),
-        }
+        rotate_impl!(&self, bounding_box())
     }
 }
 
@@ -188,42 +210,22 @@ impl<D: DrawTarget> DrawTarget for Rotate<D> {
     where
         I: IntoIterator<Item = Pixel<Self::Color>>,
     {
-        match &mut self.target {
-            RotateInner::Rotate0(inner) => inner.draw_iter(pixels),
-            RotateInner::Rotate90(inner) => inner.draw_iter(pixels),
-            RotateInner::Rotate180(inner) => inner.draw_iter(pixels),
-            RotateInner::Rotate270(inner) => inner.draw_iter(pixels),
-        }
+        rotate_impl!(&mut self, draw_iter(pixels))
     }
 
     fn fill_contiguous<I>(&mut self, area: &Rectangle, colors: I) -> Result<(), Self::Error>
     where
         I: IntoIterator<Item = Self::Color>,
     {
-        match &mut self.target {
-            RotateInner::Rotate0(inner) => inner.fill_contiguous(area, colors),
-            RotateInner::Rotate90(inner) => inner.fill_contiguous(area, colors),
-            RotateInner::Rotate180(inner) => inner.fill_contiguous(area, colors),
-            RotateInner::Rotate270(inner) => inner.fill_contiguous(area, colors),
-        }
+        rotate_impl!(&mut self, fill_contiguous(area, colors))
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-        match &mut self.target {
-            RotateInner::Rotate0(inner) => inner.fill_solid(area, color),
-            RotateInner::Rotate90(inner) => inner.fill_solid(area, color),
-            RotateInner::Rotate180(inner) => inner.fill_solid(area, color),
-            RotateInner::Rotate270(inner) => inner.fill_solid(area, color),
-        }
+        rotate_impl!(&mut self, fill_solid(area, color))
     }
 
     fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error> {
-        match &mut self.target {
-            RotateInner::Rotate0(inner) => inner.clear(color),
-            RotateInner::Rotate90(inner) => inner.clear(color),
-            RotateInner::Rotate180(inner) => inner.clear(color),
-            RotateInner::Rotate270(inner) => inner.clear(color),
-        }
+        rotate_impl!(&mut self, clear(color))
     }
 }
 
