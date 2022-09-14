@@ -61,6 +61,7 @@ macro_rules! impl_xform {
 
         impl<D> $name<D> {
             /// Apply a transformation to display implementing [`DrawTarget`].
+            #[allow(clippy::redundant_field_names)]
             pub fn new(target: D) -> Self {
                 $name {
                     target: xform_new!(target, $($xforms)*)
