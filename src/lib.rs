@@ -427,7 +427,14 @@ mod r#impl {
         }
 
         fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-            let area = area.transpose();
+            let width = self.bounding_box().size.width as i32 - 1;
+            let area = Rectangle {
+                top_left: Point {
+                    x: width - area.top_left.x - area.size.width as i32,
+                    y: area.top_left.y,
+                },
+                size: area.size,
+            };
             self.target.fill_solid(&area, color)
         }
 
@@ -488,7 +495,14 @@ mod r#impl {
         }
 
         fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-            let area = area.transpose();
+            let height = self.bounding_box().size.height as i32 - 1;
+            let area = Rectangle {
+                top_left: Point {
+                    x: area.top_left.x,
+                    y: height - area.top_left.y - area.size.height as i32,
+                },
+                size: area.size,
+            };
             self.target.fill_solid(&area, color)
         }
 

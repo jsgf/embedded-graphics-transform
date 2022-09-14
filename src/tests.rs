@@ -275,3 +275,59 @@ fn rot270() {
         "###########          ",
     ]);
 }
+
+#[test]
+fn solid_flipx() {
+    let mut disp = FlipX::new(MockDisplay::new());
+
+    disp.fill_solid(
+        &Rectangle {
+            top_left: Point::new(1, 1),
+            size: Size {
+                width: 5,
+                height: 10,
+            },
+        },
+        BinaryColor::On,
+    )
+    .expect("fill failed");
+
+    assert_eq!(
+        disp.as_ref().affected_area(),
+        Rectangle {
+            top_left: Point::new(64 - 1 - 1 - 5, 1),
+            size: Size {
+                width: 5,
+                height: 10
+            }
+        }
+    );
+}
+
+#[test]
+fn solid_flipy() {
+    let mut disp = FlipY::new(MockDisplay::new());
+
+    disp.fill_solid(
+        &Rectangle {
+            top_left: Point::new(1, 1),
+            size: Size {
+                width: 5,
+                height: 10,
+            },
+        },
+        BinaryColor::On,
+    )
+    .expect("fill failed");
+
+    assert_eq!(
+        disp.as_ref().affected_area(),
+        Rectangle {
+            top_left: Point::new(1, 64 - 1 - 1 - 10),
+            size: Size {
+                width: 5,
+                height: 10
+            }
+        }
+    );
+}
