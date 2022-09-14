@@ -388,7 +388,6 @@ fn solid_rot180() {
     );
 }
 
-
 #[test]
 fn solid_rot270() {
     let mut disp = Rotate270::new(MockDisplay::new());
@@ -415,4 +414,27 @@ fn solid_rot270() {
             }
         }
     );
+}
+
+#[test]
+fn rect_transpose() {
+    let rect = Rectangle {
+        top_left: Point::new(20, 10),
+        size: Size::new(5, 100),
+    };
+
+    fn lower_right(rect: &Rectangle) -> Point {
+        Point::new(
+            rect.top_left.x + rect.size.width as i32,
+            rect.top_left.y + rect.size.height as i32,
+        )
+    }
+
+    assert_eq!(lower_right(&rect), Point::new(25, 110));
+
+    use crate::r#impl::Transpose;
+
+    let rx = rect.transpose();
+
+    assert_eq!(lower_right(&rx), Point::new(110, 25));
 }

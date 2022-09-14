@@ -140,7 +140,7 @@ impl_xform! {
 }
 impl_xform! {
     /// Rotate image 90 degrees to the left.
-    Rotate270: MirrorX TransposeXY
+    Rotate270: TransposeXY MirrorY
 }
 impl_xform! {
     /// Rotate image 180 degrees.
@@ -285,7 +285,7 @@ impl<D: DrawTarget> DrawTarget for Rotate<D> {
 mod r#impl {
     use embedded_graphics_core::{prelude::*, primitives::Rectangle};
 
-    trait Transpose {
+    pub(crate) trait Transpose {
         fn transpose(self) -> Self;
     }
 
