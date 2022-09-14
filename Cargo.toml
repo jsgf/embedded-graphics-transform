@@ -9,3 +9,6 @@ keywords = ["embedded", "graphics", "no-std"]
 
 [dependencies]
 embedded-graphics-core = "0.3.3"
+
+[dev-dependencies]
+embedded-graphics = "0.7"

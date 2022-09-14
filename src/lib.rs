@@ -25,6 +25,9 @@
 
 use embedded_graphics_core::{prelude::*, primitives::Rectangle};
 
+#[cfg(test)]
+mod tests;
+
 macro_rules! xform_type {
     ($inner:ident , ) => { $inner };
     ($inner:ident , $xform: ident $($rest:ident)*) => {
@@ -132,11 +135,11 @@ impl_xform! {
 }
 impl_xform! {
     /// Rotate image 90 degrees to the right.
-    Rotate90: MirrorX TransposeXY
+    Rotate90: MirrorY TransposeXY
 }
 impl_xform! {
     /// Rotate image 90 degrees to the left.
-    Rotate270: MirrorY TransposeXY
+    Rotate270: MirrorX TransposeXY
 }
 impl_xform! {
     /// Rotate image 180 degrees.
@@ -216,6 +219,7 @@ macro_rules! rotate_impl {
 }
 
 impl<D> Rotate<D> {
+    /// Create a new rotation transformation using the given [`Rotation`].
     pub fn new(rot: Rotation, target: D) -> Self {
         let target = match rot {
             Rotation::Rotate0 => RotateInner::Rotate0(Rotate0::new(target)),
@@ -413,7 +417,7 @@ mod r#impl {
         where
             I: IntoIterator<Item = Pixel<Self::Color>>,
         {
-            let width = self.bounding_box().size.width as i32;
+            let width = self.bounding_box().size.width as i32 - 1;
 
             self.target.draw_iter(
                 pixels
@@ -474,7 +478,7 @@ mod r#impl {
         where
             I: IntoIterator<Item = Pixel<Self::Color>>,
         {
-            let height = self.bounding_box().size.height as i32;
+            let height = self.bounding_box().size.height as i32 - 1;
 
             self.target.draw_iter(
                 pixels
