@@ -6,6 +6,11 @@ authors = [
     "Jeremy Fitzhardinge <jeremy@goop.org>",
 ]
 keywords = ["embedded", "graphics", "no-std"]
+categories = ["embedded", "graphics", "no-std"]
+repository = "https://github.com/jsgf/embedded-graphics-transform.git"
+license = "MIT OR Apache-2.0"
+description = "Simple coordinate transforms for embedded display drivers"
+readme = "README.md"
 
 [dependencies]
 embedded-graphics-core = "0.3.3"
