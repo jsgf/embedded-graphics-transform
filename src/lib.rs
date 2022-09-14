@@ -54,92 +54,94 @@ macro_rules! impl_as_ref {
 }
 
 macro_rules! impl_xform {
-    ($(#[$attr:meta])* $name:ident : $($xforms:ident)*) => {
-        $(#[$attr])*
-        pub struct $name<D> {
-            target: xform_type!(D, $($xforms)*)
-        }
+    ($($(#[$attr:meta])* $name:ident : $($xforms:ident)* ; )*) => {
+        $(
+            $(#[$attr])*
+            pub struct $name<D> {
+                target: xform_type!(D, $($xforms)*)
+            }
 
-        impl<D> $name<D> {
-            /// Apply a transformation to display implementing [`DrawTarget`].
-            #[allow(clippy::redundant_field_names)]
-            pub fn new(target: D) -> Self {
-                $name {
-                    target: xform_new!(target, $($xforms)*)
+            impl<D> $name<D> {
+                /// Apply a transformation to display implementing [`DrawTarget`].
+                #[allow(clippy::redundant_field_names)]
+                pub fn new(target: D) -> Self {
+                    $name {
+                        target: xform_new!(target, $($xforms)*)
+                    }
+                }
+
+                /// Recover the inner display instance.
+                pub fn into_inner(self) -> D {
+                    impl_as_ref!(into_inner, self.target, $($xforms)*)
                 }
             }
 
-            /// Recover the inner display instance.
-            pub fn into_inner(self) -> D {
-                impl_as_ref!(into_inner, self.target, $($xforms)*)
-            }
-        }
+            impl<D> Deref for $name<D> {
+                type Target = D;
 
-        impl<D> Deref for $name<D> {
-            type Target = D;
-
-            fn deref(&self) -> &D {
-                self.as_ref()
-            }
-        }
-
-        impl<D> DerefMut for $name<D> {
-            fn deref_mut(&mut self) -> &mut D {
-                self.as_mut()
-            }
-        }
-
-        impl<D> AsRef<D> for $name<D> {
-            #[inline]
-            fn as_ref(&self) -> &D {
-                impl_as_ref!(as_ref, &self.target, $($xforms)*)
-            }
-        }
-
-        impl<D> AsMut<D> for $name<D> {
-            #[inline]
-            fn as_mut(&mut self) -> &mut D {
-                impl_as_ref!(as_mut, &mut self.target, $($xforms)*)
-            }
-        }
-
-        impl<D: Dimensions> Dimensions for $name<D> {
-            #[inline]
-            fn bounding_box(&self) -> Rectangle {
-                self.target.bounding_box()
-            }
-        }
-
-        impl<D: DrawTarget> DrawTarget for $name<D> {
-            type Color = D::Color;
-            type Error = D::Error;
-
-            #[inline]
-            fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
-            where
-                I: IntoIterator<Item = Pixel<Self::Color>>,
-            {
-                self.target.draw_iter(pixels)
+                fn deref(&self) -> &D {
+                    self.as_ref()
+                }
             }
 
-            #[inline]
-            fn fill_contiguous<I>(&mut self, area: &Rectangle, colors: I) -> Result<(), Self::Error>
-            where
-                I: IntoIterator<Item = Self::Color>,
-            {
-                self.target.fill_contiguous(area, colors)
+            impl<D> DerefMut for $name<D> {
+                fn deref_mut(&mut self) -> &mut D {
+                    self.as_mut()
+                }
             }
 
-            #[inline]
-            fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-                self.target.fill_solid(area, color)
+            impl<D> AsRef<D> for $name<D> {
+                #[inline]
+                fn as_ref(&self) -> &D {
+                    impl_as_ref!(as_ref, &self.target, $($xforms)*)
+                }
             }
 
-            #[inline]
-            fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error> {
-                self.target.clear(color)
+            impl<D> AsMut<D> for $name<D> {
+                #[inline]
+                fn as_mut(&mut self) -> &mut D {
+                    impl_as_ref!(as_mut, &mut self.target, $($xforms)*)
+                }
             }
-        }
+
+            impl<D: Dimensions> Dimensions for $name<D> {
+                #[inline]
+                fn bounding_box(&self) -> Rectangle {
+                    self.target.bounding_box()
+                }
+            }
+
+            impl<D: DrawTarget> DrawTarget for $name<D> {
+                type Color = D::Color;
+                type Error = D::Error;
+
+                #[inline]
+                fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
+                where
+                    I: IntoIterator<Item = Pixel<Self::Color>>,
+                {
+                    self.target.draw_iter(pixels)
+                }
+
+                #[inline]
+                fn fill_contiguous<I>(&mut self, area: &Rectangle, colors: I) -> Result<(), Self::Error>
+                where
+                    I: IntoIterator<Item = Self::Color>,
+                {
+                    self.target.fill_contiguous(area, colors)
+                }
+
+                #[inline]
+                fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
+                    self.target.fill_solid(area, color)
+                }
+
+                #[inline]
+                fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error> {
+                    self.target.clear(color)
+                }
+            }
+        )*
     }
 }
 
@@ -147,33 +149,20 @@ macro_rules! impl_xform {
 // applied in order from last to first.
 impl_xform! {
     /// No-op (identity) rotation for completeness.
-    Rotate0:
-}
-impl_xform! {
+    Rotate0: ;
     /// Rotate image 90 degrees to the right.
-    Rotate90: MirrorY TransposeXY
-}
-impl_xform! {
+    Rotate90: MirrorY TransposeXY;
     /// Rotate image 90 degrees to the left.
-    Rotate270: TransposeXY MirrorY
-}
-impl_xform! {
+    Rotate270: TransposeXY MirrorY;
     /// Rotate image 180 degrees.
-    Rotate180: MirrorX MirrorY
-}
+    Rotate180: MirrorX MirrorY;
 
-// Transpose and Mirror
-impl_xform! {
     /// Transpose X and Y coordinates.
-    Transpose: TransposeXY
-}
-impl_xform! {
+    Transpose: TransposeXY;
     /// Mirror image around X axis.
-    FlipX: MirrorX
-}
-impl_xform! {
+    FlipX: MirrorX;
     /// Mirror image around Y axis.
-    FlipY: MirrorY
+    FlipY: MirrorY;
 }
 
 /// Image rotation direction and amount.
