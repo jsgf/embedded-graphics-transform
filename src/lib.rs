@@ -23,6 +23,7 @@
 //! underlying display object so that its inherent functions can be called.
 #![no_std]
 
+use core::ops::{Deref, DerefMut};
 use embedded_graphics_core::{prelude::*, primitives::Rectangle};
 
 #[cfg(test)]
@@ -71,6 +72,20 @@ macro_rules! impl_xform {
             /// Recover the inner display instance.
             pub fn into_inner(self) -> D {
                 impl_as_ref!(into_inner, self.target, $($xforms)*)
+            }
+        }
+
+        impl<D> Deref for $name<D> {
+            type Target = D;
+
+            fn deref(&self) -> &D {
+                self.as_ref()
+            }
+        }
+
+        impl<D> DerefMut for $name<D> {
+            fn deref_mut(&mut self) -> &mut D {
+                self.as_mut()
             }
         }
 
@@ -234,6 +249,20 @@ impl<D> Rotate<D> {
     /// Recover the inner display instance.
     pub fn into_inner(self) -> D {
         rotate_impl!(self, into_inner())
+    }
+}
+
+impl<D> Deref for Rotate<D> {
+    type Target = D;
+
+    fn deref(&self) -> &D {
+        self.as_ref()
+    }
+}
+
+impl<D> DerefMut for Rotate<D> {
+    fn deref_mut(&mut self) -> &mut D {
+        self.as_mut()
     }
 }
 
