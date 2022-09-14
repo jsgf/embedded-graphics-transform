@@ -331,3 +331,88 @@ fn solid_flipy() {
         }
     );
 }
+
+#[test]
+fn solid_rot90() {
+    let mut disp = Rotate90::new(MockDisplay::new());
+
+    disp.fill_solid(
+        &Rectangle {
+            top_left: Point::new(1, 1),
+            size: Size {
+                width: 5,
+                height: 10,
+            },
+        },
+        BinaryColor::On,
+    )
+    .expect("fill failed");
+
+    assert_eq!(
+        disp.as_ref().affected_area(),
+        Rectangle {
+            top_left: Point::new(64 - 1 - 1 - 10, 1),
+            size: Size {
+                width: 10,
+                height: 5
+            }
+        }
+    );
+}
+
+#[test]
+fn solid_rot180() {
+    let mut disp = Rotate180::new(MockDisplay::new());
+
+    disp.fill_solid(
+        &Rectangle {
+            top_left: Point::new(1, 1),
+            size: Size {
+                width: 5,
+                height: 10,
+            },
+        },
+        BinaryColor::On,
+    )
+    .expect("fill failed");
+
+    assert_eq!(
+        disp.as_ref().affected_area(),
+        Rectangle {
+            top_left: Point::new(64 - 1 - 1 - 5, 64 - 1 - 1 - 10),
+            size: Size {
+                width: 5,
+                height: 10
+            }
+        }
+    );
+}
+
+
+#[test]
+fn solid_rot270() {
+    let mut disp = Rotate270::new(MockDisplay::new());
+
+    disp.fill_solid(
+        &Rectangle {
+            top_left: Point::new(1, 1),
+            size: Size {
+                width: 5,
+                height: 10,
+            },
+        },
+        BinaryColor::On,
+    )
+    .expect("fill failed");
+
+    assert_eq!(
+        disp.as_ref().affected_area(),
+        Rectangle {
+            top_left: Point::new(1, 64 - 1 - 1 - 5),
+            size: Size {
+                width: 10,
+                height: 5
+            }
+        }
+    );
+}
